@@ -142,37 +142,65 @@
   isToc: false,
   pageType: 'about'
 }</script><link rel="stylesheet" href="https://unpkg.zhimg.com/@fortawesome/fontawesome-free@6.1.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.css"><style>
-  /* 播放器主体：半透明毛玻璃背景 + 樱花粉微发光阴影 */
-  .aplayer {
-    background: rgba(255, 255, 255, 0.75) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 8px 32px 0 rgba(255, 179, 193, 0.25) !important; /* 樱花粉微光阴影 */
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    transition: all 0.3s ease !important;
+  /* 1. 彻底清除最外层大容器 .aplayer 的背景、边框和阴影（防止大盒子盖住网页和歌词） */
+  .aplayer.aplayer-fixed {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
-  /* 迷你收起模式下的圆角优化 */
-  .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+
+  /* 2. 只把真正的“播放器长条”和“缩回按钮”加上毛玻璃、背景、阴影和边框 */
+  .aplayer.aplayer-fixed .aplayer-body,
+  .aplayer.aplayer-fixed .aplayer-miniswitcher {
+    background: rgba(255, 255, 255, 0.65) !important; /* 通透的半透明 */
+    backdrop-filter: blur(15px) !important;
+    -webkit-backdrop-filter: blur(15px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 8px 32px 0 rgba(255, 179, 193, 0.3) !important;
+  }
+
+  /* 3. 播放长条圆角微调（右边圆角，左边贴紧屏幕边缘） */
+  .aplayer.aplayer-fixed .aplayer-body {
     border-radius: 0 12px 12px 0 !important;
   }
-  /* 歌单展开列表：同样应用半透明毛玻璃效果 */
-  .aplayer .aplayer-list {
-    background: rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
+
+  /* 4. 缩回小按钮的圆角微调 */
+  .aplayer.aplayer-fixed .aplayer-miniswitcher {
+    border-radius: 0 12px 12px 0 !important;
+  }
+
+  /* 5. 歌词样式优化（清除毛玻璃背景，让它干干净净地悬浮在播放器长条上方） */
+  .aplayer.aplayer-fixed .aplayer-lrc {
+    bottom: 10px !important; /* 向上微调，避开下方的播放器本体 */
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9) !important;
+  }
+
+  /* 6. 歌单展开列表：应用半透明与毛玻璃 */
+  .aplayer .aplayer-list,
+  .aplayer .aplayer-list ol {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(15px) !important;
+    -webkit-backdrop-filter: blur(15px) !important;
     border-radius: 12px !important;
   }
-  /* 正在播放的曲目高亮背景色 */
-  .aplayer .aplayer-list ol li.aplayer-list-light {
-    background: rgba(255, 179, 193, 0.15) !important; /* 浅粉色高亮 */
+
+  /* 7. 歌单单行歌曲背景设为透明 */
+  .aplayer .aplayer-list ol li {
+    background: transparent !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
   }
-  /* 歌词滚动字体美化 */
-  .aplayer .aplayer-lrc {
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+
+  /* 8. 正在播放的曲目高亮粉色 */
+  .aplayer .aplayer-list ol li.aplayer-list-light {
+    background: rgba(255, 179, 193, 0.2) !important;
   }
 </style>
-<meta name="generator" content="Hexo 8.1.2"></head><body><div class="page" id="body-wrap"><header class="not-home-page" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">弭苦神社</span></a></span><div id="menus"></div></nav><div id="page-site-info"><h1 id="site-title">关于我</h1></div></header><main class="layout" id="content-inner"><div id="page"><div class="container" id="article-container"></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Ihajacker</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">2</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ihajacker"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/06/14/%E7%AA%97/" title="窗"><img src="/images/hanabi.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="窗"/></a><div class="content"><a class="title" href="/2026/06/14/%E7%AA%97/" title="窗">窗</a><time datetime="2026-06-14T07:30:00.000Z" title="Created 2026-06-14 15:30:00">2026-06-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/13/20260305/" title="20260305"><img src="/images/snow.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="20260305"/></a><div class="content"><a class="title" href="/2026/06/13/20260305/" title="20260305">20260305</a><time datetime="2026-06-13T15:10:00.000Z" title="Created 2026-06-13 23:10:00">2026-06-13</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+<meta name="generator" content="Hexo 8.1.2"></head><body><div class="page" id="body-wrap"><header class="not-home-page" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">弭苦神社</span></a></span><div id="menus"></div></nav><div id="page-site-info"><h1 id="site-title">关于我</h1></div></header><main class="layout" id="content-inner"><div id="page"><div class="container" id="article-container"></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Ihajacker</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">2</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ihajacker"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/06/14/%E7%AA%97/" title="窗"><img src="/images/hanabi.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="窗"/></a><div class="content"><a class="title" href="/2026/06/14/%E7%AA%97/" title="窗">窗</a><time datetime="2026-06-14T07:30:00.000Z" title="Created 2026-06-14 15:30:00">2026-06-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/13/20260305/" title="20260305"><img src="/images/snow.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="20260305"/></a><div class="content"><a class="title" href="/2026/06/13/20260305/" title="20260305">20260305</a><time datetime="2026-06-13T15:10:00.000Z" title="Created 2026-06-13 23:10:00">2026-06-13</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
             <i class="fas fa-folder-open"></i>
             <span>Categories</span>
             
@@ -198,7 +226,7 @@
         </li>
       
     </ul>
-  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>Website Info</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">Article Count :</div><div class="item-count">2</div></div><div class="webinfo-item"><div class="item-name">Unique Visitors :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Page Views :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Last Update :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-06-14T14:00:00.266Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Ihajacker</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><div class="js-pjax"></div><script src="https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/meting/2.0.1/Meting.min.js"></script><div class="no-destroy">
+  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>Website Info</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">Article Count :</div><div class="item-count">2</div></div><div class="webinfo-item"><div class="item-name">Unique Visitors :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Page Views :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Last Update :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-06-14T15:09:08.046Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Ihajacker</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><div class="js-pjax"></div><script src="https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/meting/2.0.1/Meting.min.js"></script><div class="no-destroy">
   <meting-js
     id="18058770594"
     server="netease"
