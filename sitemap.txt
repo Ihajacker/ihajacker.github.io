@@ -5,6 +5,6 @@ https://ihajacker.github.io/archives/index.html
 https://ihajacker.github.io/categories/index.html
 https://ihajacker.github.io/tags/index.html
 https://ihajacker.github.io/
-https://ihajacker.github.io/tags/%E9%9B%AA/
 https://ihajacker.github.io/tags/%E9%9A%8F%E7%AC%94/
+https://ihajacker.github.io/tags/%E9%9B%AA/
 https://ihajacker.github.io/categories/%E9%9A%8F%E7%AC%94/
