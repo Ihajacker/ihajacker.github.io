@@ -244,80 +244,155 @@
   } else {
     window.loadOtherComment = loadGiscus
   }
-})()</script></div><script src="https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/meting/2.0.1/Meting.min.js"></script><meting-js id="18058770594" server="netease" type="playlist" fixed="true" mini="true" theme="#ffb3c1" order="random" volume="0.5"></meting-js><canvas id="spine-canvas" class="no-destroy" style="position: fixed; bottom: 0; left: 100px; z-index: 99999; pointer-events: auto;"></canvas><script>
+})()</script></div><script src="https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/meting/2.0.1/Meting.min.js"></script><meting-js id="18058770594" server="netease" type="playlist" fixed="true" mini="true" theme="#ffb3c1" order="random" volume="0.5"></meting-js><canvas id="spine-canvas" class="no-destroy" style="position: fixed; bottom: 0; left: 100px; z-index: 99999; pointer-events: auto; cursor: grab;"></canvas><script>
   document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('spine-canvas');
     if (!canvas) return;
 
-    // 1. 初始化 PixiJS 画布 (长宽设为 150x250)
+    // 1. 初始化 PixiJS 画布 (长宽设为 300x500)
     const app = new PIXI.Application({
       view: canvas,
       autoStart: true,
       transparent: true,
-      width: 400,
-      height: 750
+      width: 300,
+      height: 500
     });
 
-    // 2. 使用 Pixi 资源加载器加载你的本地 Spine 骨骼和贴图（由于图片分辨率已经物理匹配，不需要任何缩放参数了！）
+    // 2. 使用 Pixi 资源加载器加载你的本地 Spine 骨骼和贴图
     PIXI.Loader.shared
       .add('spineCharacter', '/spine/closure/build_char_4228_closur.skel', { 
-        xhrType: PIXI.LoaderResource.XHR_RESPONSE_TYPE.BUFFER, // 必须保留二进制格式
+        xhrType: PIXI.LoaderResource.XHR_RESPONSE_TYPE.BUFFER, // 指定二进制格式，确保数据不失真
         metadata: { 
-          spineAtlasFile: '/spine/closure/build_char_4228_closur.atlas' // 恢复最简格式！
+          spineAtlasFile: '/spine/closure/build_char_4228_closur.atlas',
+          spineAtlasScale: 0.66667 // 2/3比例缩放，对齐你的 416 小图
         } 
       })
       .load((loader, resources) => {
-        // 创建 Spine 实例
         const spine = new PIXI.spine.Spine(resources.spineCharacter.spineData);
         app.stage.addChild(spine);
 
-        // 调整骨骼在画布内的大小和位置（使其站立在底部正中间）
-        spine.scale.set(0.4); // 根据你 Spine 的实际大小微调缩放比例
+        // 调整骨骼在画布内的大小和位置
+        spine.scale.set(0.3); 
         spine.x = app.screen.width / 2;
         spine.y = app.screen.height;
 
-        // 默认播放你的站立/闲置动画
+        // 默认播放你的呼吸待机动画
         if (spine.state.hasAnimation('Relax')) {
           spine.state.setAnimation(0, 'Relax', true);
-          spine.update(0); 
+          spine.update(0); // 强行手动刷新一帧，激活并唤醒骨骼
         }
 
-        
         // -------------------------------------------------------------
-        // 3. 【运动算法】：控制 Canvas 容器在屏幕底部来回走动
+        // 3. 【核心运动与重力物理算法】：控制走动、下落与弹跳
         // -------------------------------------------------------------
         let state = 'Relax'; 
-        let direction = 1;  // 方向：1(向右) / -1(向左)
-        let currentX = 100; // Canvas 的初始位置
-        const speed = 0.4;  // 走动速度
+        let direction = 1;      // 方向：1(向右) / -1(向左)
+        
+        // 物理变量
+        let currentX = 100;     // Canvas 当前横坐标
+        let currentY = window.innerHeight - 250; // Canvas 当前纵坐标（动态初始化）
+        let velocityY = 0;      // 垂直下落速度
+        const gravity = 0.2;    // 重力加速度
+        const bounce = 0.25;    // 触地反弹系数
+        
+        const speed = 1.2;      // 散步走路速度
+
+        // 动态将小人初始化定位到贴紧屏幕底部
+        currentY = window.innerHeight - canvas.offsetHeight;
+        canvas.style.bottom = 'auto'; // 清除 CSS 原本的固定 bottom
+        canvas.style.top = currentY + 'px';
+        canvas.style.left = currentX + 'px';
 
         // 定时器：每 8 秒随机决定是“站着”还是“开始走路”
         setInterval(() => {
-          if (state === 'Relax' && Math.random() > 0.3) {
-            state = 'Move';
-            if (spine.state.hasAnimation('Move')) {
-              // 播放走路/移动动画
-              spine.state.setAnimation(0, 'Move', true);
-            }
-          } else if (state === 'Move' && Math.random() > 0.5) {
-            state = 'Relax';
-            if (spine.state.hasAnimation('Relax')) {
-              // 恢复闲置动画
-              spine.state.setAnimation(0, 'Relax', true);
+          const floorY = window.innerHeight - canvas.offsetHeight;
+          // 必须在小人稳稳站在平地上（或卡片平台上）时，才允许随机走动
+          if (velocityY === 0) {
+            if (state === 'Relax' && Math.random() > 0.3) {
+              state = 'Move';
+              if (spine.state.hasAnimation('Move')) {
+                spine.state.setAnimation(0, 'Move', true);
+              }
+            } else if (state === 'Move' && Math.random() > 0.5) {
+              state = 'Relax';
+              if (spine.state.hasAnimation('Relax')) {
+                spine.state.setAnimation(0, 'Relax', true);
+              }
             }
           }
         }, 8000);
 
-        // 每一帧更新位移
+        // 每一帧渲染循环：执行重力物理与水平移动
         app.ticker.add(() => {
           const screenWidth = window.innerWidth;
+          const screenHeight = window.innerHeight;
           const canvasWidth = canvas.offsetWidth;
+          const canvasHeight = canvas.offsetHeight;
 
-          if (state === 'Move') {
+          // 3.1 拖拽时物理挂起，不执行任何重力和走动
+          if (isDragging) return;
+
+          // ---------------------------------------------------------
+          // 3.2 核心黑科技：【动态卡片地板算法】
+          // ---------------------------------------------------------
+          // 计算小人的脚心坐标
+          const feetX = currentX + canvasWidth / 2;
+          const feetY = currentY + canvasHeight;
+          
+          let targetFloorY = screenHeight; // 默认是屏幕最底部的地面
+
+          // 抓取页面上所有的“文章卡片”和“侧边栏卡片”作为可行走平台
+          const platforms = document.querySelectorAll('.recent-post-item, .card-widget');
+          platforms.forEach(platform => {
+            const rect = platform.getBoundingClientRect();
+            // 检查小人是否在平台的水平宽度范围内
+            if (feetX >= rect.left && feetX <= rect.right) {
+              // 平台高度必须在小人脚下，且高于当前计算出来的最低地面（Y 轴坐标越小，代表在屏幕上位置越高）
+              if (rect.top >= feetY - 8 && rect.top < targetFloorY) {
+                targetFloorY = rect.top;
+              }
+            }
+          });
+
+          const floorY = targetFloorY - canvasHeight; // 折算出 Canvas 顶部的目标 Y 轴坐标
+
+          // 3.3 物理引擎：模拟重力下落与触平台碰撞
+          if (currentY < floorY) {
+            velocityY += gravity; // 速度受到重力加速
+            currentY += velocityY;
+
+            // 触地检测
+            if (currentY >= floorY) {
+              currentY = floorY; // 强行对齐地面/卡片顶部
+
+              // 检查落地时的撞击速度是否足够大
+              if (Math.abs(velocityY) > 2) {
+                velocityY = -velocityY * bounce; // 向上反弹
+                
+                // 落地吃痛反馈
+                if (spine.state.hasAnimation('Interact') && Math.abs(velocityY) > 2) {
+                  spine.state.setAnimation(0, 'Interact', false);
+                  spine.state.addAnimation(0, 'Relax', true, 0);
+                }
+              } else {
+                velocityY = 0; // 彻底停稳在地面上
+                if (state !== 'Move') {
+                  state = 'Relax';
+                  if (spine.state.hasAnimation('Relax')) {
+                    spine.state.setAnimation(0, 'Relax', true);
+                  }
+                }
+              }
+            }
+            canvas.style.top = currentY + 'px';
+          }
+
+          // 3.4 散步算法：只有当稳稳站在地面/卡片上时，才允许散步
+          if (state === 'Move' && currentY >= floorY) {
             currentX += speed * direction;
             canvas.style.left = currentX + 'px';
 
-            // 碰撞检测：走到屏幕两边缘自动转身
+            // 边缘检测：走到屏幕边缘自动转身
             if (currentX + canvasWidth >= screenWidth - 50) {
               direction = -1;
               spine.scale.x = -Math.abs(spine.scale.x); // 转身
@@ -329,19 +404,78 @@
         });
 
         // -------------------------------------------------------------
-        // 4. 【互动算法】：点击触发随机动作
+        // 4. 【点击与拖拽算法】：按住自由飞天拖拽，松开触发重力落地
         // -------------------------------------------------------------
-        canvas.addEventListener('click', () => {
-          state = 'Relax'; // 点击强制停下
-          
-          // 随机播放你骨骼里拥有的互动动作名（请确保这些名字在你的 Spine 动作列表里实际存在）
-          const clickMotions = ['Interact', 'Sleep']; 
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let canvasStartX = 0;
+        let canvasStartY = 0;
+        let hasMoved = false; // 区分点击和拖拽的标志
+
+        // 辅助函数：触发点击互动
+        function triggerClickInteraction() {
+          state = 'Relax'; 
+          const clickMotions = ['Interact', 'Sit', 'Sleep', 'Special', 'Relax']; 
           const randomMotion = clickMotions[Math.floor(Math.random() * clickMotions.length)];
           
           if (spine.state.hasAnimation(randomMotion)) {
-            // 播放一次互动动作，播放完毕后自动恢复为 Relax
             spine.state.setAnimation(0, randomMotion, false);
             spine.state.addAnimation(0, 'Relax', true, 0);
+          }
+        }
+
+        // 鼠标按下：准备开始拖拽，清空重力速度
+        canvas.addEventListener('mousedown', (e) => {
+          isDragging = true;
+          hasMoved = false;
+          dragStartX = e.clientX;
+          dragStartY = e.clientY;
+          
+          // 获取当前 Canvas 的绝对坐标
+          const rect = canvas.getBoundingClientRect();
+          canvasStartX = rect.left;
+          canvasStartY = rect.top;
+          
+          canvas.style.bottom = 'auto'; // 清除 CSS 约束
+          canvas.style.left = canvasStartX + 'px';
+          canvas.style.top = canvasStartY + 'px';
+          canvas.style.cursor = 'grabbing'; // 鼠标攥紧 ✊
+          
+          velocityY = 0; // 拖拽时必须强行清空垂直下落速度！
+          state = 'Relax'; 
+          if (spine.state.hasAnimation('Relax')) {
+            spine.state.setAnimation(0, 'Relax', true);
+          }
+        });
+
+        // 鼠标移动：同步拖拽位移
+        window.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          
+          const dx = e.clientX - dragStartX;
+          const dy = e.clientY - dragStartY;
+          
+          if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            hasMoved = true;
+          }
+          
+          currentX = canvasStartX + dx; // 同步当前 X 轴
+          currentY = canvasStartY + dy; // 同步当前 Y 轴（用于重力衔接）
+          
+          canvas.style.left = currentX + 'px';
+          canvas.style.top = currentY + 'px';
+        });
+
+        // 鼠标抬起：结束拖拽，恢复重力
+        window.addEventListener('mouseup', () => {
+          if (!isDragging) return;
+          isDragging = false;
+          canvas.style.cursor = 'grab'; // 恢复手势 🤚
+          
+          // 如果鼠标按下后几乎没有位移，判定为单纯的点击
+          if (!hasMoved) {
+            triggerClickInteraction();
           }
         });
       });
