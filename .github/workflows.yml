@@ -1,0 +1,38 @@
+name: Hexo Auto Deploy
+
+on:
+  push:
+    branches:
+      - source # 监听本地推送至 source 分支的变动
+
+permissions:
+  contents: write # 授予本工作流写入权限，以便自动更新网页
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # 使用最新的长期稳定版 Node.js
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: |
+          npm ci # 极速、干净地在云端安装依赖
+
+      - name: Build Hexo Static Files
+        run: |
+          npx hexo clean
+          npx hexo generate
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: public # 将编译生成的 public 文件夹部署上去
+          branch: main # 部署并覆盖到 main 分支（即你的网页服务分支）
+          token: ${{ secrets.GITHUB_TOKEN }} # 使用官方默认的临时安全令牌
