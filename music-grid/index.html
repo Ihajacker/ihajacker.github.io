@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>音乐墙生成器 (Topsters) | 弭苦神社</title><meta name="author" content="Ihajacker"><meta name="copyright" content="Ihajacker"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="请输入网易云公开歌单ID                             3 列         4 列         5 列         6 列         7 列         8 列         9 列         10 列              ×                3 行         4 行         5 行">
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>音乐墙生成器 (Topsters) | 弭苦神社</title><meta name="author" content="Ihajacker"><meta name="copyright" content="Ihajacker"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="&#x2F;* 核心修复：强行禁用 Butterfly 容易裁剪十位数数字的列表样式，恢复完美且不缩水的浏览器原生数字编号 *&#x2F;     #tracks-container ol {       list-style-type: decimal !important;       padding-left: 28px !important;     }     #tracks-cont">
 <meta property="og:type" content="website">
 <meta property="og:title" content="音乐墙生成器 (Topsters)">
 <meta property="og:url" content="https://ihajacker.github.io/music-grid/index.html">
 <meta property="og:site_name" content="弭苦神社">
-<meta property="og:description" content="请输入网易云公开歌单ID                             3 列         4 列         5 列         6 列         7 列         8 列         9 列         10 列              ×                3 行         4 行         5 行">
+<meta property="og:description" content="&#x2F;* 核心修复：强行禁用 Butterfly 容易裁剪十位数数字的列表样式，恢复完美且不缩水的浏览器原生数字编号 *&#x2F;     #tracks-container ol {       list-style-type: decimal !important;       padding-left: 28px !important;     }     #tracks-cont">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://ihajacker.github.io/images/avatar.jpg">
 <meta property="article:published_time" content="2026-07-18T07:30:00.000Z">
-<meta property="article:modified_time" content="2026-07-18T09:36:33.261Z">
+<meta property="article:modified_time" content="2026-07-18T12:08:39.781Z">
 <meta property="article:author" content="Ihajacker">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://ihajacker.github.io/images/avatar.jpg"><script type="application/ld+json"></script><link rel="shortcut icon" href="/images/favicon-32x32.png"><link rel="canonical" href="https://ihajacker.github.io/music-grid/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css"><script>
@@ -147,9 +147,19 @@
 <script src="https://cdn.bootcdn.net/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
 <div style="max-width: 800px; margin: 0 auto; padding: 20px; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 16px; box-shadow: 0 8px 32px rgba(255,179,193,0.15); border: 1px solid rgba(255,255,255,0.4);">
+  <style>
+    /* 核心修复：强行禁用 Butterfly 容易裁剪十位数数字的列表样式，恢复完美且不缩水的浏览器原生数字编号 */
+    #tracks-container ol {
+      list-style-type: decimal !important;
+      padding-left: 28px !important;
+    }
+    #tracks-container ol li::before {
+      content: none !important;
+    }
+  </style>
   <p style="margin-top: 0; color: #555;">请输入网易云公开歌单ID</p>
   <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
-    <input type="text" id="playlist-id-input" placeholder="请输入网易云歌单 ID" style="flex: 2; min-width: 200px; padding: 12px 16px; border: 2px solid #ffe5ec; border-radius: 8px; outline: none; transition: border-color 0.3s; font-family: inherit;" />
+    <input type="text" id="playlist-id-input" placeholder="请输入网易云歌单 ID (如: 8106208033)" style="flex: 1; padding: 12px 16px; border: 2px solid #ffe5ec; border-radius: 8px; outline: none; transition: border-color 0.3s; font-family: inherit;" />
     <div style="display: flex; gap: 8px; align-items: center; flex: 1; min-width: 180px;">
       <select id="cols-input" style="padding: 12px; border: 2px solid #ffe5ec; border-radius: 8px; font-family: inherit; outline: none; background: white; flex: 1; color: #555;">
         <option value="3">3 列</option>
@@ -177,7 +187,7 @@
   </div>
   <div style="margin-bottom: 15px;">
     <label style="display: flex; align-items: center; gap: 8px; color: #ffb3c1; font-weight: bold; cursor: pointer; font-size: 15px;">
-      <input type="checkbox" id="include-text-input" style="cursor: pointer;" checked /> 导出的下载图片中包含右侧文字清单
+      <input type="checkbox" id="include-text-input" style="cursor: pointer;" checked /> 导出的下载图片中包含专辑名列表
     </label>
   </div>
   <div id="custom-bg-panel" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin-bottom: 25px; padding: 15px; background: rgba(255,179,193,0.05); border-radius: 8px; border: 1px dashed #ffe5ec;">
@@ -201,7 +211,7 @@
   <div id="result-area" style="display: flex; flex-wrap: wrap; gap: 30px; display: none;">
     <div style="flex: 1.2; min-width: 280px; text-align: center;">
       <img id="preview-img" style="width: 100%; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); margin-bottom: 15px;" />
-      <a id="download-link" style="display: inline-block; padding: 12px 24px; background: #e84343; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.3s;">📥 下载这张拼图</a>
+      <a id="download-link" style="display: inline-block; padding: 12px 24px; background: #e84343; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.3s;">下载这张拼图</a>
     </div>
     <div style="flex: 1; min-width: 250px; max-height: 400px; overflow-y: auto; padding-right: 10px;">
       <h3 style="margin-top: 0; color: #ffb3c1; border-bottom: 2px solid #ffe5ec; padding-bottom: 8px;">专辑收录清单</h3>
@@ -302,24 +312,44 @@
     canvas.height = rows * imgSize;
 
     try {
-      const proxyUrl = `https://api.injahow.cn/meting/?server=netease&type=playlist&id=${playlistId}`;
-      const response = await fetch(proxyUrl);
-      const data = await response.json();
+      // 【第一步核心更正】：换用 V3 版本的官方接口（/api/v3/playlist/detail），它的数据里才真正包含完整的 trackIds 列表！
+      const playlistUrl = `https://corsproxy.io/?https://music.163.com/api/v3/playlist/detail?id=${playlistId}`;
+      const response1 = await fetch(playlistUrl);
+      const data1 = await response1.json();
 
-      if (!data || data.length === 0) {
-        throw new Error('歌单为空或获取数据失败！');
+      // 核心更正：V3 接口返回的根节点是 playlist（而不是 result），所以读取 data1.playlist.trackIds 
+      if (!data1 || !data1.playlist || !data1.playlist.trackIds) {
+        throw new Error('歌单不存在、未公开，或无法读取！');
       }
 
-      const tracks = data.slice(0, totalSongs);
-      tips.innerText = `成功加载 ${tracks.length} 首歌曲！正在下载封面并拼接大图...`;
+      // 截取目标数量的歌曲 ID
+      const trackIds = data1.playlist.trackIds.slice(0, totalSongs).map(item => item.id);
+      if (trackIds.length === 0) {
+        throw new Error('歌单内没有歌曲！');
+      }
+
+      tips.innerText = `成功读取到 ${trackIds.length} 首歌曲，正在调取完整的歌手与真实专辑数据...`;
+
+      // 【第二步】：批量获取包含“真实专辑名”的详情数据，使用稳定的 corsproxy.io 通道
+      const songDetailUrl = `https://corsproxy.io/?https://music.163.com/api/song/detail?ids=[${trackIds.join(',')}]`;
+      const response2 = await fetch(songDetailUrl);
+      const data2 = await response2.json();
+
+      if (!data2 || !data2.songs || data2.songs.length === 0) {
+        throw new Error('获取歌曲详细信息失败！');
+      }
+
+      const tracks = data2.songs; // 100% 获取到了最完整的歌曲真实详情！
+      tips.innerText = `数据已全部加载完毕！正在下载封面并拼接大图...`;
 
       let listHtml = '<ol style="padding-left: 20px; line-height: 1.8; font-size: 14px; color: #555;">';
       const imagePromises = [];
 
       tracks.forEach((track, index) => {
-        const artists = track.artist;  
-        const albumName = track.name;   
-        const rawPicUrl = track.pic;    
+        // 本地网页显示：使用真正的 歌手 + 专辑名 格式！
+        const artists = track.artists.map(a => a.name).join('/');  
+        const albumName = track.album.name; // 真正的专辑名 
+        const rawPicUrl = track.album.picUrl;    
 
         listHtml += `<li>${artists} - 《${albumName}》</li>`;
 
@@ -385,8 +415,8 @@
         const lineHeight = (canvas.height - paddingTop * 2) / tracks.length;
 
         tracks.forEach((track, index) => {
-          const artists = track.artist;
-          const albumName = track.name;
+          const artists = track.artists.map(a => a.name).join('/');
+          const albumName = track.album.name; // 绘制真正的专辑名！
           const textLine = `${index + 1}. ${artists} - ${albumName}`;
           
           let truncatedText = textLine;
@@ -415,14 +445,14 @@
       tips.innerText = `生成失败了：${err.message}。请确保输入的是数字歌单ID，且歌单已设为公开！`;
     }
   });
-</script></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Ihajacker</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ihajacker"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/01/%E6%AD%BB%E4%BA%A1%E8%AF%97%E7%A4%BE/" title="Untitled"><img src="/images/hanabi.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Untitled"/></a><div class="content"><a class="title" href="/2026/07/01/%E6%AD%BB%E4%BA%A1%E8%AF%97%E7%A4%BE/" title="Untitled">Untitled</a><time datetime="2026-07-01T07:34:19.353Z" title="Created 2026-07-01 15:34:19">2026-07-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/14/%E7%AA%97%E4%B8%8E%E5%BC%A6/" title="窗与弦"><img src="/images/hanabi.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="窗与弦"/></a><div class="content"><a class="title" href="/2026/06/14/%E7%AA%97%E4%B8%8E%E5%BC%A6/" title="窗与弦">窗与弦</a><time datetime="2026-06-14T07:30:00.000Z" title="Created 2026-06-14 15:30:00">2026-06-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/13/20260305/" title="20260305"><img src="/images/snow.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="20260305"/></a><div class="content"><a class="title" href="/2026/06/13/20260305/" title="20260305">20260305</a><time datetime="2026-06-13T15:10:00.000Z" title="Created 2026-06-13 23:10:00">2026-06-13</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+</script></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comments</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Ihajacker</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ihajacker"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/01/%E6%AD%BB%E4%BA%A1%E8%AF%97%E7%A4%BE/" title="Untitled"><img src="/images/hanabi.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Untitled"/></a><div class="content"><a class="title" href="/2026/07/01/%E6%AD%BB%E4%BA%A1%E8%AF%97%E7%A4%BE/" title="Untitled">Untitled</a><time datetime="2026-07-01T07:34:19.353Z" title="Created 2026-07-01 15:34:19">2026-07-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/14/%E7%AA%97%E4%B8%8E%E5%BC%A6/" title="窗与弦"><img src="/images/hanabi.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="窗与弦"/></a><div class="content"><a class="title" href="/2026/06/14/%E7%AA%97%E4%B8%8E%E5%BC%A6/" title="窗与弦">窗与弦</a><time datetime="2026-06-14T07:30:00.000Z" title="Created 2026-06-14 15:30:00">2026-06-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/13/20260305/" title="20260305"><img src="/images/snow.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="20260305"/></a><div class="content"><a class="title" href="/2026/06/13/20260305/" title="20260305">20260305</a><time datetime="2026-06-13T15:10:00.000Z" title="Created 2026-06-13 23:10:00">2026-06-13</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
             <i class="fas fa-folder-open"></i>
             <span>Categories</span>
             
           </div>
           <ul class="card-category-list" id="aside-cat-list">
             <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E9%9A%8F%E7%AC%94/"><span class="card-category-list-name">随笔</span><span class="card-category-list-count">2</span></a></li>
-          </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>Tags</span></div><div class="card-tag-cloud"><a href="/tags/%E9%9B%AA/" style="font-size: 1.1em; color: #999">雪</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 1.1em; color: #999">随笔</a></div></div><div class="card-widget card-archives">
+          </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>Tags</span></div><div class="card-tag-cloud"><a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 1.1em; color: #999">随笔</a> <a href="/tags/%E9%9B%AA/" style="font-size: 1.1em; color: #999">雪</a></div></div><div class="card-widget card-archives">
     <div class="item-headline">
       <i class="fas fa-archive"></i>
       <span>Archives</span>
@@ -450,7 +480,82 @@
         </li>
       
     </ul>
-  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>Website Info</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">Article Count :</div><div class="item-count">3</div></div><div class="webinfo-item"><div class="item-name">Unique Visitors :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Page Views :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Last Update :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-07-18T10:33:42.944Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Ihajacker</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><div class="js-pjax"></div><script src="https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/meting/2.0.1/Meting.min.js"></script><meting-js id="18058770594" server="netease" type="playlist" fixed="true" mini="true" theme="#ffb3c1" order="random" volume="0.5"></meting-js><canvas id="spine-canvas" class="no-destroy" style="position: fixed; bottom: 0; left: 100px; z-index: 99999; pointer-events: auto; cursor: grab;"></canvas><script>
+  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>Website Info</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">Article Count :</div><div class="item-count">3</div></div><div class="webinfo-item"><div class="item-name">Unique Visitors :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Page Views :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Last Update :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-07-18T12:08:55.752Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Ihajacker</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><a id="to_comment" href="#post-comment" title="Scroll to Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"category":"Announcements","mapping":"pathname","strict":0,"reactions_enabled":1,"emit_metadata":0,"input_position":"top","lang":"zh-CN","loading":"lazy"}
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'Ihajacker/ihajacker.github.io',
+      'data-repo-id': 'R_kgDOS5uAFA',
+      'data-category-id': 'DIC_kwDOS5uAFM4C_Kju',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/meting/2.0.1/Meting.min.js"></script><meting-js id="18058770594" server="netease" type="playlist" fixed="true" mini="true" theme="#ffb3c1" order="random" volume="0.5"></meting-js><canvas id="spine-canvas" class="no-destroy" style="position: fixed; bottom: 0; left: 100px; z-index: 99999; pointer-events: auto; cursor: grab;"></canvas><script>
   document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('spine-canvas');
     if (!canvas) return;
