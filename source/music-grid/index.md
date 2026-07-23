@@ -51,6 +51,9 @@ type: "music-grid"
     <label style="display: flex; align-items: center; gap: 8px; color: #ffb3c1; font-weight: bold; cursor: pointer; font-size: 15px; margin: 0;">
       <input type="checkbox" id="include-text-input" style="cursor: pointer;" checked /> 导出的下载图片中包含专辑名列表
     </label>
+    <label style="display: flex; align-items: center; gap: 8px; color: #ffb3c1; font-weight: bold; cursor: pointer; font-size: 15px; margin: 0;">
+      <input type="checkbox" id="dedup-input" style="cursor: pointer;" /> 去重（自动跳过重复封面）
+    </label>
     <div style="display: flex; gap: 8px; align-items: center;">
       <span style="color: #ffb3c1; font-weight: bold; font-size: 15px;">显示格式：</span>
       <select id="text-type-input" style="padding: 6px 12px; border: 2px solid #ffe5ec; border-radius: 8px; font-family: inherit; outline: none; background: white; color: #555; cursor: pointer;">
@@ -105,6 +108,7 @@ type: "music-grid"
   const cropperContainer = document.getElementById('cropper-container');
   const cropperImg = document.getElementById('cropper-img');
   const textTypeInput = document.getElementById('text-type-input');
+  const dedupCheckbox = document.getElementById('dedup-input');
   const ctx = canvas.getContext('2d');
   const imgSize = 200;
   let cropper = null;
@@ -192,6 +196,7 @@ type: "music-grid"
     const includeText = includeTextCheckbox.checked;
     const opacity = parseFloat(bgOpacityInput.value);
     const textType = textTypeInput.value;
+    const dedup = dedupCheckbox.checked;
 
     if (!playlistId) {
       alert('请输入正确的网易云歌单分享链接，或直接输入纯数字歌单 ID');
@@ -208,6 +213,7 @@ type: "music-grid"
 
     try {
       let tracks = [];
+      let allTracks = []; // 去重时展示用，包含所有已读取歌曲
 
       // -------------------------------------------------------------
       // 核心“双引擎”算法：根据用户选择，完美融合并自动分流两套数据逻辑
@@ -228,6 +234,22 @@ type: "music-grid"
           titleName: track.name, // 歌曲名作为代替
           picUrl: track.pic      // 封面图
         }));
+
+        if (dedup) {
+          const seenUrls = new Set();
+          const unique = [];
+          const all = [];
+          for (const track of data) {
+            if (unique.length >= totalSongs) break;
+            const mapped = { artist: track.artist, titleName: track.name, picUrl: track.pic };
+            all.push(mapped);
+            if (!seenUrls.has(mapped.picUrl)) { seenUrls.add(mapped.picUrl); unique.push(mapped); }
+          }
+          tracks = unique;
+          allTracks = all;
+        } else {
+          allTracks = tracks;
+        }
 
       } else {
         // 【方案一（专辑名模式）】：完全使用你测试成功的 官方 V3 双步请求 接口（抓取真正的专辑名）
@@ -260,19 +282,66 @@ type: "music-grid"
           titleName: track.album.name,                       // 真实专辑名！
           picUrl: track.album.picUrl                       // 原版高清大图
         }));
+
+        if (dedup) {
+          const seenUrls = new Set();
+          const unique = [];
+          const all = [];
+          for (const t of tracks) {
+            all.push(t);
+            if (!seenUrls.has(t.picUrl)) { seenUrls.add(t.picUrl); unique.push(t); }
+          }
+          if (unique.length < totalSongs) {
+            const allTrackIds = data1.playlist.trackIds.map(item => item.id);
+            for (let i = totalSongs; i < allTrackIds.length && unique.length < totalSongs; i += 50) {
+              const batch = allTrackIds.slice(i, i + 50);
+              tips.innerText = `去重中：已扫 ${all.length} 首，找到 ${unique.length}/${totalSongs} 张不同封面...`;
+              const batchUrl = `https://corsproxy.io/?https://music.163.com/api/song/detail?ids=[${batch.join(',')}]`;
+              const batchResp = await fetch(batchUrl);
+              const batchData = await batchResp.json();
+              if (!batchData || !batchData.songs) continue;
+              for (const track of batchData.songs) {
+                if (unique.length >= totalSongs) break;
+                const mapped = {
+                  artist: track.artists.map(a => a.name).join('/'),
+                  titleName: track.album.name,
+                  picUrl: track.album.picUrl
+                };
+                all.push(mapped);
+                if (!seenUrls.has(mapped.picUrl)) { seenUrls.add(mapped.picUrl); unique.push(mapped); }
+              }
+            }
+          }
+          tracks = unique.slice(0, totalSongs);
+          allTracks = all;
+        } else {
+          allTracks = tracks;
+        }
       }
 
       tips.innerText = `数据已全部加载完毕！正在下载封面并拼接大图...`;
 
+      // DOM 列表（去重时展示全部已读歌曲，标记重复）
       let listHtml = '<ol style="padding-left: 20px; line-height: 1.8; font-size: 14px; color: #555;">';
+      if (dedup) {
+        const seenPics = new Set();
+        allTracks.forEach(track => {
+          const isDup = seenPics.has(track.picUrl);
+          seenPics.add(track.picUrl);
+          const note = isDup ? ' <span style="color:#bbb;font-size:12px;">🔄重复</span>' : '';
+          listHtml += `<li>${track.artist} - 《${track.titleName}》${note}</li>`;
+        });
+      } else {
+        allTracks.forEach(track => {
+          listHtml += `<li>${track.artist} - 《${track.titleName}》</li>`;
+        });
+      }
+      listHtml += '</ol>';
+
+      // 网格图片始终用 tracks（去重后的唯一封面）
       const imagePromises = [];
-
       tracks.forEach((track, index) => {
-        const artists = track.artist;  
-        const albumName = track.titleName; // 动态决定是专辑名还是歌名 
-        const rawPicUrl = track.picUrl;    
-
-        listHtml += `<li>${artists} - 《${albumName}》</li>`;
+        const rawPicUrl = track.picUrl;
 
         const cleanUrl = rawPicUrl.replace('http://', '').replace('https://', '');
         const corsPicUrl = `https://images.weserv.nl/?url=${encodeURIComponent(cleanUrl)}&w=200&h=200&fit=cover&output=jpg`;
@@ -293,8 +362,6 @@ type: "music-grid"
         });
         imagePromises.push(p);
       });
-
-      listHtml += '</ol>';
 
       const results = await Promise.all(imagePromises);
 
@@ -328,14 +395,15 @@ type: "music-grid"
 
         ctx.fillStyle = '#ffffff';
         
-        const fontSize = Math.max(10, Math.min(18, Math.floor((canvas.height - 80) / tracks.length) - 4));
+        const displayList = allTracks.length > 0 ? allTracks : tracks;
+        const fontSize = Math.max(10, Math.min(18, Math.floor((canvas.height - 80) / displayList.length) - 4));
         ctx.font = `${fontSize}px "LXGW WenKai Screen", sans-serif`;
         
         const paddingLeft = cols * imgSize + 30;
         const paddingTop = 40;
-        const lineHeight = (canvas.height - paddingTop * 2) / tracks.length;
+        const lineHeight = (canvas.height - paddingTop * 2) / displayList.length;
 
-        tracks.forEach((track, index) => {
+        displayList.forEach((track, index) => {
           const artists = track.artist;
           const albumName = track.titleName; 
           const textLine = `${index + 1}. ${artists} - ${albumName}`;
