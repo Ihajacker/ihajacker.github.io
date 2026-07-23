@@ -1147,7 +1147,7 @@ inject:
               const gravity = 0.2;    // 重力加速度
               const bounce = 0.25;    // 触地反弹系数
               
-              const speed = 1.2;      // 散步走路速度
+              const speed = 0.4;      // 散步走路速度
 
               // 动态将小人初始化定位到贴紧屏幕底部
               currentY = window.innerHeight - canvas.offsetHeight;

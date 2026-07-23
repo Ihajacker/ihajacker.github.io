@@ -2,16 +2,25 @@
 title: 音乐墙生成器 (Topsters)
 date: 2026-07-18 15:30:00
 type: "music-grid"
-comments: false      
 ---
 
 <link href="https://cdn.bootcdn.net/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
 <script src="https://cdn.bootcdn.net/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
 <div style="max-width: 800px; margin: 0 auto; padding: 20px; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 16px; box-shadow: 0 8px 32px rgba(255,179,193,0.15); border: 1px solid rgba(255,255,255,0.4);">
-  <p style="margin-top: 0; color: #555;">请输入网易云公开歌单ID</p>
+  <style>
+    /* 核心修复：强行禁用 Butterfly 容易裁剪十位数数字的列表样式，恢复完美且不缩水的浏览器原生数字编号 */
+    #tracks-container ol {
+      list-style-type: decimal !important;
+      padding-left: 28px !important;
+    }
+    #tracks-container ol li::before {
+      content: none !important;
+    }
+  </style>
+  <p style="margin-top: 0; color: #555;">请输入网易云公开歌单分享链接</p>
   <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
-    <input type="text" id="playlist-id-input" placeholder="请输入网易云歌单 ID" style="flex: 2; min-width: 200px; padding: 12px 16px; border: 2px solid #ffe5ec; border-radius: 8px; outline: none; transition: border-color 0.3s; font-family: inherit;" />
+    <input type="text" id="playlist-id-input" placeholder="请输入歌单分享链接，或直接输入歌单 ID" style="flex: 1; padding: 12px 16px; border: 2px solid #ffe5ec; border-radius: 8px; outline: none; transition: border-color 0.3s; font-family: inherit;" />
     <div style="display: flex; gap: 8px; align-items: center; flex: 1; min-width: 180px;">
       <select id="cols-input" style="padding: 12px; border: 2px solid #ffe5ec; border-radius: 8px; font-family: inherit; outline: none; background: white; flex: 1; color: #555;">
         <option value="3">3 列</option>
@@ -37,10 +46,18 @@ comments: false
     </div>
     <button id="generate-btn" style="padding: 12px 24px; background: #ffb3c1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.3s; flex: 0.5; min-width: 100px;">开始生成</button>
   </div>
-  <div style="margin-bottom: 15px;">
-    <label style="display: flex; align-items: center; gap: 8px; color: #ffb3c1; font-weight: bold; cursor: pointer; font-size: 15px;">
-      <input type="checkbox" id="include-text-input" style="cursor: pointer;" checked /> 导出的下载图片中包含右侧文字清单
+  <!-- 整合美化：复选框与格式切换下拉框并排排版 -->
+  <div style="margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
+    <label style="display: flex; align-items: center; gap: 8px; color: #ffb3c1; font-weight: bold; cursor: pointer; font-size: 15px; margin: 0;">
+      <input type="checkbox" id="include-text-input" style="cursor: pointer;" checked /> 导出的下载图片中包含专辑名列表
     </label>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <span style="color: #ffb3c1; font-weight: bold; font-size: 15px;">显示格式：</span>
+      <select id="text-type-input" style="padding: 6px 12px; border: 2px solid #ffe5ec; border-radius: 8px; font-family: inherit; outline: none; background: white; color: #555; cursor: pointer;">
+        <option value="album" selected>歌手 - 《专辑名》</option>
+        <option value="song">歌手 - 《歌曲名》</option>
+      </select>
+    </div>
   </div>
   <div id="custom-bg-panel" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin-bottom: 25px; padding: 15px; background: rgba(255,179,193,0.05); border-radius: 8px; border: 1px dashed #ffe5ec;">
     <div style="flex: 1.2; min-width: 200px;">
@@ -63,7 +80,7 @@ comments: false
   <div id="result-area" style="display: flex; flex-wrap: wrap; gap: 30px; display: none;">
     <div style="flex: 1.2; min-width: 280px; text-align: center;">
       <img id="preview-img" style="width: 100%; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); margin-bottom: 15px;" />
-      <a id="download-link" style="display: inline-block; padding: 12px 24px; background: #e84343; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.3s;">📥 下载这张拼图</a>
+      <a id="download-link" style="display: inline-block; padding: 12px 24px; background: #e84343; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.3s;">下载这张拼图</a>
     </div>
     <div style="flex: 1; min-width: 250px; max-height: 400px; overflow-y: auto; padding-right: 10px;">
       <h3 style="margin-top: 0; color: #ffb3c1; border-bottom: 2px solid #ffe5ec; padding-bottom: 8px;">专辑收录清单</h3>
@@ -87,9 +104,34 @@ comments: false
   const opacityValSpan = document.getElementById('opacity-val');
   const cropperContainer = document.getElementById('cropper-container');
   const cropperImg = document.getElementById('cropper-img');
+  const textTypeInput = document.getElementById('text-type-input');
   const ctx = canvas.getContext('2d');
   const imgSize = 200;
   let cropper = null;
+
+  function extractPlaylistId(rawInput) {
+    const text = rawInput.trim();
+    if (!text) return null;
+
+    // 兼容用户仍然直接输入纯数字 ID 的旧习惯
+    if (/^\d+$/.test(text)) {
+      return text;
+    }
+
+    // 优先匹配常见网易云歌单链接中的 id 参数
+    const queryMatch = text.match(/(?:playlist|playlist\/detail)[^"'`\s]*?[?&]id=(\d+)/i);
+    if (queryMatch) {
+      return queryMatch[1];
+    }
+
+    // 兼容形如 /playlist/123456789 的路径式链接
+    const pathMatch = text.match(/playlist\/(\d+)/i);
+    if (pathMatch) {
+      return pathMatch[1];
+    }
+
+    return null;
+  }
 
   bgOpacityInput.addEventListener('input', (e) => {
     opacityValSpan.innerText = e.target.value;
@@ -143,15 +185,16 @@ comments: false
   document.getElementById('cols-input').addEventListener('change', updateCropRatio);
 
   btn.addEventListener('click', async () => {
-    const playlistId = input.value.trim();
+    const playlistId = extractPlaylistId(input.value);
     const cols = parseInt(document.getElementById('cols-input').value, 10);
     const rows = parseInt(document.getElementById('rows-input').value, 10);
     const totalSongs = cols * rows;
     const includeText = includeTextCheckbox.checked;
     const opacity = parseFloat(bgOpacityInput.value);
+    const textType = textTypeInput.value;
 
     if (!playlistId) {
-      alert('请输入正确的歌单ID');
+      alert('请输入正确的网易云歌单分享链接，或直接输入纯数字歌单 ID');
       return;
     }
 
@@ -164,24 +207,70 @@ comments: false
     canvas.height = rows * imgSize;
 
     try {
-      const proxyUrl = `https://api.injahow.cn/meting/?server=netease&type=playlist&id=${playlistId}`;
-      const response = await fetch(proxyUrl);
-      const data = await response.json();
+      let tracks = [];
 
-      if (!data || data.length === 0) {
-        throw new Error('歌单为空或获取数据失败！');
+      // -------------------------------------------------------------
+      // 核心“双引擎”算法：根据用户选择，完美融合并自动分流两套数据逻辑
+      // -------------------------------------------------------------
+      if (textType === 'song') {
+        // 【方案二（歌曲名模式）】：完全使用你测试成功的 Meting 接口（本地/线上秒开，绝无跨域拦截和10首限制）
+        const metingUrl = `https://api.injahow.cn/meting/?server=netease&type=playlist&id=${playlistId}`;
+        const response = await fetch(metingUrl);
+        const data = await response.json();
+        
+        if (!data || data.length === 0) {
+          throw new Error('歌单为空或获取数据失败！');
+        }
+
+        // 统一格式化为相同的内部数据结构
+        tracks = data.slice(0, totalSongs).map(track => ({
+          artist: track.artist, // 歌手名
+          titleName: track.name, // 歌曲名作为代替
+          picUrl: track.pic      // 封面图
+        }));
+
+      } else {
+        // 【方案一（专辑名模式）】：完全使用你测试成功的 官方 V3 双步请求 接口（抓取真正的专辑名）
+        const playlistUrl = `https://corsproxy.io/?https://music.163.com/api/v3/playlist/detail?id=${playlistId}`;
+        const response1 = await fetch(playlistUrl);
+        const data1 = await response1.json();
+
+        if (!data1 || !data1.playlist || !data1.playlist.trackIds) {
+          throw new Error('歌单不存在、未公开，或无法读取！');
+        }
+
+        const trackIds = data1.playlist.trackIds.slice(0, totalSongs).map(item => item.id);
+        if (trackIds.length === 0) {
+          throw new Error('歌单内没有歌曲！');
+        }
+
+        tips.innerText = `成功读取到 ${trackIds.length} 首歌曲，正在调取完整的歌手与真实专辑数据...`;
+
+        const songDetailUrl = `https://corsproxy.io/?https://music.163.com/api/song/detail?ids=[${trackIds.join(',')}]`;
+        const response2 = await fetch(songDetailUrl);
+        const data2 = await response2.json();
+
+        if (!data2 || !data2.songs || data2.songs.length === 0) {
+          throw new Error('获取歌曲详细信息失败！');
+        }
+
+        // 统一格式化为相同的内部数据结构（包含真正的 album.name 专辑名字！）
+        tracks = data2.songs.map(track => ({
+          artist: track.artists.map(a => a.name).join('/'), // 真实歌手名
+          titleName: track.album.name,                       // 真实专辑名！
+          picUrl: track.album.picUrl                       // 原版高清大图
+        }));
       }
 
-      const tracks = data.slice(0, totalSongs);
-      tips.innerText = `成功加载 ${tracks.length} 首歌曲！正在下载封面并拼接大图...`;
+      tips.innerText = `数据已全部加载完毕！正在下载封面并拼接大图...`;
 
       let listHtml = '<ol style="padding-left: 20px; line-height: 1.8; font-size: 14px; color: #555;">';
       const imagePromises = [];
 
       tracks.forEach((track, index) => {
         const artists = track.artist;  
-        const albumName = track.name;   
-        const rawPicUrl = track.pic;    
+        const albumName = track.titleName; // 动态决定是专辑名还是歌名 
+        const rawPicUrl = track.picUrl;    
 
         listHtml += `<li>${artists} - 《${albumName}》</li>`;
 
@@ -248,7 +337,7 @@ comments: false
 
         tracks.forEach((track, index) => {
           const artists = track.artist;
-          const albumName = track.name;
+          const albumName = track.titleName; 
           const textLine = `${index + 1}. ${artists} - ${albumName}`;
           
           let truncatedText = textLine;
